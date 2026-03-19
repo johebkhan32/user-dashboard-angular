@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard - Angular Frontend Assessment</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #383838;
+        }
+
+        .dashboard-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .header-content h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #383838;
+            margin: 0 0 8px 0;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .btn-add-user {
+            height: 48px;
+            padding: 0 24px;
+            background: #1c4980;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+
+        .btn-add-user:hover {
+            background: #15375f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(28, 73, 128, 0.3);
+        }
+
+        /* Filters */
+        .filters-section {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .search-input,
+        .role-filter {
+            width: 100%;
+            height: 48px;
+            padding: 0 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: white;
+        }
+
+        .search-input:focus,
+        .role-filter:focus {
+            outline: none;
+            border-color: #1c4980;
+            box-shadow: 0 0 0 3px rgba(28, 73, 128, 0.1);
+        }
+
+        .role-filter {
+            cursor: pointer;
+        }
+
+        .btn-clear-filters {
+            height: 48px;
+            padding: 0 20px;
+            background: #f5f5f5;
+            color: #383838;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-clear-filters:hover {
+            background: #e0e0e0;
+        }
+
+        /* Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 24px;
+        }
+
+        /* Table */
+        .table-container,
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+
+        .table-header,
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .table-header h2,
+        .chart-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            color: #383838;
+            margin: 0;
+        }
+
+        .user-count {
+            font-size: 14px;
+            color: #666;
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .users-table thead {
+            background: #fafafa;
+        }
+
+        .users-table th {
+            text-align: left;
+            padding: 16px 24px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #383838;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .users-table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .users-table tbody tr:hover {
+            background: #fafafa;
+        }
+
+        .users-table td {
+            padding: 16px 24px;
+            font-size: 15px;
+            color: #383838;
+        }
+
+        .user-name {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1c4980, #2c69b0);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .email-cell {
+            color: #666;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .role-admin {
+            background: #1c4980;
+            color: white;
+        }
+
+        .role-editor {
+            background: #2c69b0;
+            color: white;
+        }
+
+        .role-viewer {
+            background: #5a9dd8;
+            color: white;
+        }
+
+        /* Chart */
+        .chart-wrapper {
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-stats {
+            padding: 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1c4980;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px);
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(30px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #383838;
+            margin: 0;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            padding: 8px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #f0f0f0;
+            color: #1c4980;
+        }
+
+        .user-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            font-size: 14px;
+            font-weight: 500;
+            color: #383838;
+        }
+
+        .form-group input,
+        .form-group select {
+            height: 48px;
+            padding: 0 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: white;
+            color: #383838;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #1c4980;
+            box-shadow: 0 0 0 3px rgba(28, 73, 128, 0.1);
+        }
+
+        .form-group input.error,
+        .form-group select.error {
+            border-color: #e74c3c;
+        }
+
+        .error-message {
+            font-size: 13px;
+            color: #e74c3c;
+            margin-top: -4px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .btn {
+            height: 48px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #383838;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn-primary {
+            background: #1c4980;
+            color: white;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #15375f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(28, 73, 128, 0.3);
+        }
+
+        .btn-primary:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+
+            .btn-add-user {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <div class="dashboard-header">
+            <div class="header-content">
+                <h1>User Dashboard</h1>
+                <p class="subtitle">Manage and monitor user roles</p>
+            </div>
+            <button class="btn-add-user" onclick="openModal()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M10 4v12M4 10h12"/>
+                </svg>
+                Add User
+            </button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="filter-group">
+                <input 
+                    type="text" 
+                    id="searchInput"
+                    placeholder="Search by name or email..."
+                    class="search-input"
+                    oninput="filterUsers()"
+                />
+            </div>
+            <div class="filter-group">
+                <select id="roleFilter" class="role-filter" onchange="filterUsers()">
+                    <option value="">All Roles</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Editor">Editor</option>
+                    <option value="Viewer">Viewer</option>
+                </select>
+            </div>
+            <button class="btn-clear-filters hidden" id="clearBtn" onclick="clearFilters()">
+                Clear Filters
+            </button>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="dashboard-grid">
+            <!-- Users Table -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h2>Users</h2>
+                    <span class="user-count" id="userCount">0 total</span>
+                </div>
+
+                <table class="users-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Role</th>
+                        </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                        <!-- Users will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Chart -->
+            <div class="chart-container">
+                <div class="chart-header">
+                    <h2>Role Distribution</h2>
+                </div>
+                <div class="chart-wrapper">
+                    <canvas id="roleChart" width="300" height="300"></canvas>
+                </div>
+                <div class="chart-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">Total Users</span>
+                        <span class="stat-value" id="totalUsers">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2>Add New User</h2>
+                <button class="close-btn" onclick="closeModal()">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form class="user-form" id="userForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="name">Name *</label>
+                    <input 
+                        id="name" 
+                        type="text" 
+                        placeholder="Enter full name"
+                        required
+                    />
+                    <div class="error-message hidden" id="nameError">Name is required</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input 
+                        id="email" 
+                        type="email" 
+                        placeholder="Enter email address"
+                        required
+                    />
+                    <div class="error-message hidden" id="emailError">Valid email is required</div>
+                </div>
+
+                <div class="form-group">
+                    <label for="roleSelect">Role *</label>
+                    <select id="roleSelect" required>
+                        <option value="" disabled selected>Select a role</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Editor">Editor</option>
+                        <option value="Viewer">Viewer</option>
+                    </select>
+                    <div class="error-message hidden" id="roleError">Role is required</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeModal()">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Add User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // User data store
+        let users = [
+            { id: '1', name: 'John Doe', email: 'john@example.com', role: 'Admin' },
+            { id: '2', name: 'Jane Smith', email: 'jane@example.com', role: 'Editor' },
+            { id: '3', name: 'Bob Johnson', email: 'bob@example.com', role: 'Viewer' },
+            { id: '4', name: 'Alice Williams', email: 'alice@example.com', role: 'Admin' },
+            { id: '5', name: 'Charlie Brown', email: 'charlie@example.com', role: 'Editor' }
+        ];
+
+        let chart = null;
+        let filteredUsers = [...users];
+
+        // Initialize
+        function init() {
+            renderTable();
+            updateChart();
+        }
+
+        // Render table
+        function renderTable() {
+            const tbody = document.getElementById('usersTableBody');
+            tbody.innerHTML = filteredUsers.map(user => `
+                <tr>
+                    <td>
+                        <div class="user-name">
+                            <div class="user-avatar">${user.name.charAt(0).toUpperCase()}</div>
+                            <span>${user.name}</span>
+                        </div>
+                    </td>
+                    <td class="email-cell">${user.email}</td>
+                    <td>
+                        <span class="role-badge role-${user.role.toLowerCase()}">${user.role}</span>
+                    </td>
+                </tr>
+            `).join('');
+
+            document.getElementById('userCount').textContent = `${filteredUsers.length} total`;
+            document.getElementById('totalUsers').textContent = users.length;
+        }
+
+        // Update chart
+        function updateChart() {
+            const roleCount = { Admin: 0, Editor: 0, Viewer: 0 };
+            users.forEach(user => roleCount[user.role]++);
+
+            const ctx = document.getElementById('roleChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Admin', 'Editor', 'Viewer'],
+                    datasets: [{
+                        data: [roleCount.Admin, roleCount.Editor, roleCount.Viewer],
+                        backgroundColor: ['#1c4980', '#2c69b0', '#5a9dd8'],
+                        borderWidth: 0,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                font: { size: 13 },
+                                usePointStyle: true
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#383838',
+                            padding: 12,
+                            callbacks: {
+                                label: function(context) {
+                                    const label = context.label;
+                                    const value = context.parsed;
+                                    const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    const percentage = ((value / total) * 100).toFixed(1);
+                                    return `${label}: ${value} (${percentage}%)`;
+                                }
+                            }
+                        }
+                    },
+                    animation: {
+                        animateRotate: true,
+                        animateScale: true,
+                        duration: 800
+                    }
+                }
+            });
+        }
+
+        // Modal functions
+        function openModal() {
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            document.getElementById('userForm').reset();
+        }
+
+        // Form submission
+        function handleSubmit(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const role = document.getElementById('roleSelect').value;
+
+            if (name && email && role) {
+                const newUser = {
+                    id: Date.now().toString(),
+                    name,
+                    email,
+                    role
+                };
+
+                users.push(newUser);
+                filterUsers();
+                updateChart();
+                closeModal();
+            }
+        }
+
+        // Filter users
+        function filterUsers() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const roleFilter = document.getElementById('roleFilter').value;
+
+            filteredUsers = users.filter(user => {
+                const matchesSearch = user.name.toLowerCase().includes(searchTerm) || 
+                                    user.email.toLowerCase().includes(searchTerm);
+                const matchesRole = !roleFilter || user.role === roleFilter;
+                return matchesSearch && matchesRole;
+            });
+
+            renderTable();
+
+            // Show/hide clear button
+            const clearBtn = document.getElementById('clearBtn');
+            if (searchTerm || roleFilter) {
+                clearBtn.classList.remove('hidden');
+            } else {
+                clearBtn.classList.add('hidden');
+            }
+        }
+
+        // Clear filters
+        function clearFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('roleFilter').value = '';
+            filterUsers();
+        }
+
+        // Close modal on overlay click
+        document.getElementById('modalOverlay').addEventListener('click', closeModal);
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>

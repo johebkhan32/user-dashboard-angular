@@ -1,0 +1,74 @@
+<!-- src/app/components/user-form/user-form.component.html -->
+
+<div class="modal-overlay" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Add New User</h2>
+      <button class="close-btn" (click)="onCancel()" aria-label="Close modal">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <form [formGroup]="userForm" (ngSubmit)="onSubmit()" class="user-form">
+      <!-- Name Field -->
+      <div class="form-group">
+        <label for="name">Name *</label>
+        <input 
+          id="name"
+          type="text" 
+          formControlName="name" 
+          placeholder="Enter full name"
+          [class.error]="name?.invalid && name?.touched"
+        />
+        <div class="error-message" *ngIf="name?.invalid && name?.touched">
+          <span *ngIf="name?.errors?.['required']">Name is required</span>
+          <span *ngIf="name?.errors?.['minlength']">Name must be at least 2 characters</span>
+        </div>
+      </div>
+
+      <!-- Email Field -->
+      <div class="form-group">
+        <label for="email">Email *</label>
+        <input 
+          id="email"
+          type="email" 
+          formControlName="email" 
+          placeholder="Enter email address"
+          [class.error]="email?.invalid && email?.touched"
+        />
+        <div class="error-message" *ngIf="email?.invalid && email?.touched">
+          <span *ngIf="email?.errors?.['required']">Email is required</span>
+          <span *ngIf="email?.errors?.['email']">Please enter a valid email</span>
+        </div>
+      </div>
+
+      <!-- Role Field -->
+      <div class="form-group">
+        <label for="role">Role *</label>
+        <select 
+          id="role"
+          formControlName="role"
+          [class.error]="role?.invalid && role?.touched"
+        >
+          <option value="" disabled selected>Select a role</option>
+          <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
+        </select>
+        <div class="error-message" *ngIf="role?.invalid && role?.touched">
+          <span *ngIf="role?.errors?.['required']">Role is required</span>
+        </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn btn-secondary" (click)="onCancel()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid">
+          Add User
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

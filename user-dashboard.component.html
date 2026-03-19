@@ -1,0 +1,154 @@
+<!-- src/app/components/user-dashboard/user-dashboard.component.html -->
+
+<div class="dashboard-container">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div class="header-content">
+      <h1>User Dashboard</h1>
+      <p class="subtitle">Manage and monitor user roles</p>
+    </div>
+    <button class="btn-add-user" (click)="openModal()">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 4v12M4 10h12"/>
+      </svg>
+      Add User
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-section">
+    <div class="filter-group">
+      <input 
+        type="text" 
+        [(ngModel)]="searchTerm" 
+        (input)="onFilterChange()"
+        placeholder="Search by name or email..."
+        class="search-input"
+      />
+    </div>
+    <div class="filter-group">
+      <select 
+        [(ngModel)]="selectedRoleFilter" 
+        (change)="onFilterChange()"
+        class="role-filter"
+      >
+        <option value="">All Roles</option>
+        <option value="Admin">Admin</option>
+        <option value="Editor">Editor</option>
+        <option value="Viewer">Viewer</option>
+      </select>
+    </div>
+    <button 
+      class="btn-clear-filters" 
+      (click)="clearFilters()"
+      *ngIf="searchTerm || selectedRoleFilter"
+    >
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Main Content Grid -->
+  <div class="dashboard-grid">
+    <!-- Users Table -->
+    <div class="table-container">
+      <div class="table-header">
+        <h2>Users</h2>
+        <span class="user-count">{{ filteredUsers.length }} total</span>
+      </div>
+
+      <!-- Loading indicator -->
+      <div class="loading-overlay" *ngIf="isLoading">
+        <div class="spinner"></div>
+        <p>Adding user...</p>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table class="users-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let user of paginatedUsers" class="table-row">
+              <td>
+                <div class="user-name">
+                  <div class="user-avatar">{{ user.name.charAt(0).toUpperCase() }}</div>
+                  <span>{{ user.name }}</span>
+                </div>
+              </td>
+              <td class="email-cell">{{ user.email }}</td>
+              <td>
+                <span class="role-badge" [class]="'role-' + user.role.toLowerCase()">
+                  {{ user.role }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Empty state -->
+        <div class="empty-state" *ngIf="paginatedUsers.length === 0">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          <p>No users found</p>
+          <p class="empty-subtitle">Try adjusting your filters or add a new user</p>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="totalPages > 1">
+        <button 
+          class="page-btn" 
+          (click)="changePage(currentPage - 1)"
+          [disabled]="currentPage === 1"
+        >
+          Previous
+        </button>
+        
+        <div class="page-numbers">
+          <button 
+            *ngFor="let page of getPageNumbers()" 
+            class="page-number"
+            [class.active]="page === currentPage"
+            (click)="changePage(page)"
+          >
+            {{ page }}
+          </button>
+        </div>
+
+        <button 
+          class="page-btn" 
+          (click)="changePage(currentPage + 1)"
+          [disabled]="currentPage === totalPages"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+
+    <!-- Chart Container -->
+    <div class="chart-container">
+      <div class="chart-header">
+        <h2>Role Distribution</h2>
+      </div>
+      <div class="chart-wrapper">
+        <canvas #chartCanvas></canvas>
+      </div>
+      <div class="chart-stats">
+        <div class="stat-item">
+          <span class="stat-label">Total Users</span>
+          <span class="stat-value">{{ users.length }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Container (for lazy-loaded UserFormComponent) -->
+  <ng-container #modalContainer></ng-container>
+</div>
